@@ -27,22 +27,17 @@ class User(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     username = db.Column(db.String(32),unique = True)
     password = db.Column(db.String(32))
-    phone = db.Column(db.String(32))
 
     def add(self):
-        print 'add'
         try:
             tempUser=User.query.filter_by(username=self.username).first()
             if tempUser is None:
                 db.session.add(self)
                 db.session.commit()
-                print success
                 return success
             else:
-                print 'else'
                 return fail
         except Exception, e:
-            print 'exception'
             print e
             db.session.rollback()
             return exception
@@ -75,6 +70,7 @@ class UsersInfo(db.Model):
     phone = db.Column(db.String(32))
     qq = db.Column(db.String(32))
     wechat = db.Column(db.String(32))
+    token = db.Column(db.String(32))
     
     def add(self):
         try:
@@ -127,9 +123,17 @@ class HistoryData(db.Model):
 class TimingTask(db.Model):
     __tablename__="timingtasks"
     id = db.Column(db.Integer,primary_key=True)
-    taskcode=db.Column(db.String)
-    user_id=db.Column(db.Integer,db.ForeignKey('users.id')) 
+    deviceid = db.Column(db.Integer)
+    starttime=db.Column(db.String)
+    amount=db.Column(db.Integer) 
+    days = db.Column(db.String)
+    devicetype = db.Column(db.String)
+    setflag = db.Column(db.String,default='0')
+    userid = db.Column(db.Integer)
+    sceneid = db.Column(db.Integer)
 
+
+    
     def add(self):
         try:
             db.session.add(self)
@@ -138,10 +142,10 @@ class TimingTask(db.Model):
             print e
             db.session.rollback()
             return exception
-#这边需要增加一个删除功能
+#删除功能
 
     def delete(self):
-        tempTask=TimingTask.query.filter_by(id=self.id,taskcode=self.taskcode).first()
+        tempTask=TimingTask.query.filter_by(deviceid=self.deviceid).first()
         try:
             db.session.delete(tempTask)
             db.session.commit()
@@ -155,9 +159,12 @@ class TimingTask(db.Model):
 class RealTimeTask(db.Model):
     __tablename__="realtimetasks"
     id = db.Column(db.Integer,primary_key=True)
-    taskcode=db.Column(db.String)
-    user_id=db.Column(db.Integer,db.ForeignKey('users.id'))     
-
+    deviceid=db.Column(db.Integer)
+    amount=db.Column(db.Integer) 
+    devicetype = db.Column(db.String)
+    setflag = db.Column(db.String,default='0')
+    userid = db.Column(db.Integer)
+    sceneid = db.Column(db.Integer)
     
     def add(self):
         try:
@@ -169,7 +176,7 @@ class RealTimeTask(db.Model):
             return exception       
                                     
     def delete(self):
-        tempTask=RealTimeTask.query.filter_by(id=self.id,taskcode=self.taskcode).first()
+        tempTask=RealTimeTask.query.filter_by(deviceid=self.deviceid).first()
         try:
             db.session.delete(tempTask)
             db.session.commit()
@@ -184,7 +191,7 @@ class Scene(db.Model):
     id = db.Column(db.Integer,primary_key=True)
     taskcode = db.Column(db.String)
     user_id = db.Column(db.Integer)
-
+    sceneid = db.Column(db.Integer)
     def add(self):
         try:
             db.session.add(self)

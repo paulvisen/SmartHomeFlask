@@ -6,7 +6,10 @@ from models import *
 
 
 import traceback
+
 import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 check_page=Blueprint('check_page',__name__)
 
@@ -16,15 +19,12 @@ def register_user():
     try:
         token=''
         username=request.json['username']
-        phone=request.json['phone']
         password = request.json['password']
-
         u=User.query.filter_by(username= str(username)).first()
-        
-        
+
         if u is None:
 
-            u=User(username=username,password=password,phone=phone)
+            u=User(username=username,password=password)
             u.add()
             state='successful'
             tmp = getTokenInformation(username)
@@ -45,7 +45,6 @@ def register_user():
 # 2. 用户登录
 @check_page.route('/login',methods=['POST'])
 def login():
-    print 'login'
     try:
         token = ''
         username=request.json['username']
@@ -83,16 +82,19 @@ def editprofile():
         qq = request.json['qq']
         phone = request.json['phone']
         wechat = request.json['wechat']
-        usersinfo=UsersInfo.query.filter_by(id=token).first()
+        usersinfo=UsersInfo.query.filter_by(token=token).first()
         if usersinfo is None:
-            state = fail
-            reason = '该用户未注册该应用'
-            token = '-1'
+            info = UsersInfo(name=name,phone=phone,qq=qq,wechat=wechat,token=token)
+            info.add()
+            state = 'successfual'
+            reason = ''
+
         else:
             usersinfo.name = name
             usersinfo.qq = qq
             usersinfo.phone = phone
             usersinfo.wechat = wechat
+            usersinfo.token = token
             try:
                 db.session.add(usersinfo)
                 db.session.commit()
@@ -116,7 +118,7 @@ def editprofile():
 def getprofile():
     try:
         token = request.json['token']
-        usersinfo = UsersInfo.query.filter_by(id=token).first()
+        usersinfo = UsersInfo.query.filter_by(token=token).first()
         if usersinfo is None:
             state = 'fail'
             reason = '该用户未注册应用'
@@ -144,8 +146,7 @@ def resetpasswd():
     try:    
         token = request.json['token']
         password = request.json['password']
-        phone = request.json['phone']
-        u=User.query.filter_by(id=token).filter_by(phone=phone).first()
+        u=User.query.filter_by(id=token).first()
 # 可以尝试前面加  _and  或者  前面加_or 操作        
         if u is None:
             state='fail'
